@@ -12,7 +12,7 @@ public class OnCallService {
     private final WorkMonthRepository workMonthRepository;
     private final Parser<String> monthAndWeekDayParser;
 
-    public OnCallService(WorkMonthRepository workMonthRepository, Parser monthAndWeekDayParser) {
+    public OnCallService(WorkMonthRepository workMonthRepository, Parser<String> monthAndWeekDayParser) {
         this.workMonthRepository = workMonthRepository;
         this.monthAndWeekDayParser = monthAndWeekDayParser;
     }
