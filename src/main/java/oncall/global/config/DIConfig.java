@@ -1,17 +1,31 @@
 package oncall.global.config;
 
-import oncall.controller.OncallController;
+import oncall.controller.OnCallController;
+import oncall.domain.repository.WorkMonthRepository;
+import oncall.domain.service.OnCallService;
+import oncall.global.util.MonthAndWeekDayParser;
+import oncall.global.util.Parser;
 import oncall.global.validator.Validator;
 import oncall.view.InputView;
 import oncall.view.OutputView;
 
 public class DIConfig {
 
-    public OncallController oncallController() {
-        return new OncallController(
+    private final WorkMonthRepository workMonthRepository = new WorkMonthRepository();
+
+    public OnCallController oncallController() {
+        return new OnCallController(
+                onCallService(),
                 inputView(),
                 outputView(),
                 validator()
+        );
+    }
+
+    public OnCallService onCallService() {
+        return new OnCallService(
+                workMonthRepository(),
+                monthAndWeekDayParser()
         );
     }
 
@@ -25,5 +39,13 @@ public class DIConfig {
 
     public Validator validator() {
         return new Validator();
+    }
+
+    public Parser<String> monthAndWeekDayParser() {
+        return new MonthAndWeekDayParser();
+    }
+
+    public WorkMonthRepository workMonthRepository() {
+        return workMonthRepository;
     }
 }
