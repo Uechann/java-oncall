@@ -33,9 +33,15 @@ public class OnCallController {
         });
 
         retry(() -> {
-            String weekDaysWorkers = inputView.inputWeekDaysWorkers();
+            // 평일 근무자 순번 초기화
+            String weekDaysWorkersInput = inputView.inputWeekDaysWorkers();
+            validator.validateWeekDayWorkersInput(weekDaysWorkersInput);
+            onCallService.initializeWeekDayWorkers(weekDaysWorkersInput);
 
-            String holidaysWorkers = inputView.inputHolidaysWorkers();
+            // 휴일 근무자 순번 초기화
+            String holidaysWorkersInput = inputView.inputHolidaysWorkers();
+            validator.validateHolidayWorkersInput(holidaysWorkersInput);
+            onCallService.initializeHolidayWorkers(holidaysWorkersInput);
             return null;
         });
     }

@@ -7,4 +7,6 @@ public class Pattern {
 
     public static final String MONTH_AND_WEEKDAYS_PATTERN =
             String.format("^%s+,+%s$", MONTH, WEEKDAYS);
+
+    public static final String WORKERS_INPUT_PATTERN = "^[^,\\s]{1,5}(,[^,\\s]{1,5})+$";
 }

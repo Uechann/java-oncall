@@ -1,11 +1,11 @@
 package oncall.global.config;
 
 import oncall.controller.OnCallController;
-import oncall.domain.repository.HolidaysRepository;
-import oncall.domain.repository.WorkMonthRepository;
+import oncall.domain.repository.*;
 import oncall.domain.service.OnCallService;
 import oncall.global.util.MonthAndWeekDayParser;
 import oncall.global.util.Parser;
+import oncall.global.util.WorkersParser;
 import oncall.global.validator.Validator;
 import oncall.view.InputView;
 import oncall.view.OutputView;
@@ -13,7 +13,10 @@ import oncall.view.OutputView;
 public class DIConfig {
 
     private final WorkMonthRepository workMonthRepository = new WorkMonthRepository();
-    private final HolidaysRepository holidaysRepository = new HolidaysRepository();
+    private final HolidayRepository holidayRepository = new HolidayRepository();
+    private final WorkerRepository workerRepository = new WorkerRepository();
+    private final WeekDayWorkerRepository weekDayWorkerRepository = new WeekDayWorkerRepository();
+    private final HolidayWorkerRepository holidayWorkerRepository = new HolidayWorkerRepository();
 
     public OnCallController oncallController() {
         return new OnCallController(
@@ -28,7 +31,11 @@ public class DIConfig {
         return new OnCallService(
                 holidaysRepository(),
                 workMonthRepository(),
-                monthAndWeekDayParser()
+                workerRepository(),
+                weekDayWorkerRepository(),
+                holidayWorkerRepository(),
+                monthAndWeekDayParser(),
+                workersParser()
         );
     }
 
@@ -48,11 +55,27 @@ public class DIConfig {
         return new MonthAndWeekDayParser();
     }
 
-    public HolidaysRepository holidaysRepository() {
-        return holidaysRepository;
+    public Parser<String> workersParser() {
+        return new WorkersParser();
+    }
+
+    public HolidayRepository holidaysRepository() {
+        return holidayRepository;
     }
 
     public WorkMonthRepository workMonthRepository() {
         return workMonthRepository;
+    }
+
+    public WorkerRepository workerRepository() {
+        return workerRepository;
+    }
+
+    public WeekDayWorkerRepository weekDayWorkerRepository() {
+        return weekDayWorkerRepository;
+    }
+
+    public HolidayWorkerRepository holidayWorkerRepository() {
+        return holidayWorkerRepository;
     }
 }
