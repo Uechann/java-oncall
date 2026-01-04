@@ -14,6 +14,7 @@ public class DIConfig {
 
     private final WorkMonthRepository workMonthRepository = new WorkMonthRepository();
     private final HolidayRepository holidayRepository = new HolidayRepository();
+    private final WorkDayRepository workDayRepository = new WorkDayRepository();
     private final WorkerRepository workerRepository = new WorkerRepository();
     private final WeekDayWorkerRepository weekDayWorkerRepository = new WeekDayWorkerRepository();
     private final HolidayWorkerRepository holidayWorkerRepository = new HolidayWorkerRepository();
@@ -31,6 +32,7 @@ public class DIConfig {
         return new OnCallService(
                 holidaysRepository(),
                 workMonthRepository(),
+                workDayRepository(),
                 workerRepository(),
                 weekDayWorkerRepository(),
                 holidayWorkerRepository(),
@@ -65,6 +67,10 @@ public class DIConfig {
 
     public WorkMonthRepository workMonthRepository() {
         return workMonthRepository;
+    }
+
+    public WorkDayRepository workDayRepository() {
+        return workDayRepository;
     }
 
     public WorkerRepository workerRepository() {

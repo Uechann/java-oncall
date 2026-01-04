@@ -12,4 +12,8 @@ public class HolidayWorkerRepository {
     public void save(HolidayWorker holidayWorker) {
         holidayWorkers.add(holidayWorker);
     }
+
+    public List<HolidayWorker> findAll() {
+        return List.copyOf(holidayWorkers);
+    }
 }

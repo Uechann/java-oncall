@@ -13,4 +13,8 @@ public class WeekDayWorker {
     public static WeekDayWorker create(Worker worker, int sequence) {
         return new WeekDayWorker(worker, sequence);
     }
+
+    public Worker getWorker() {
+        return worker;
+    }
 }

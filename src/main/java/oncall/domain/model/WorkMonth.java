@@ -25,14 +25,8 @@ public class WorkMonth {
         this.holidays = holidays;
     }
 
-    public static WorkMonth create(Month month, String dayOfWeek, List<Holiday> holidays) {
-        // 월 화 수 목 금 토 일 -> CustomDayOfWeek으로 변환
-        CustomDayOfWeek week = Arrays.stream(CustomDayOfWeek.values())
-                .filter(customDayOfWeek -> customDayOfWeek.getKoreaName().equals(dayOfWeek))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(INVALID_MONTH_AND_WEEKDAY.getMessage()));
-
-        return new WorkMonth(month, week, holidays);
+    public static WorkMonth create(Month month, CustomDayOfWeek customDayOfWeek, List<Holiday> holidays) {
+        return new WorkMonth(month, customDayOfWeek, holidays);
     }
 
     public Month getMonth() {
@@ -41,5 +35,9 @@ public class WorkMonth {
 
     public CustomDayOfWeek getStartDayOfWeek() {
         return startDayOfWeek;
+    }
+
+    public List<Holiday> getHolidays() {
+        return holidays;
     }
 }

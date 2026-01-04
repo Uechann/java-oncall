@@ -12,4 +12,8 @@ public class WeekDayWorkerRepository {
     public void save(WeekDayWorker weekDayWorker) {
         weekDayWorkers.add(weekDayWorker);
     }
+
+    public List<WeekDayWorker> findAll() {
+        return List.copyOf(weekDayWorkers);
+    }
 }

@@ -1,6 +1,10 @@
 package oncall.domain.model;
 
 import java.time.DayOfWeek;
+import java.util.Arrays;
+
+import static oncall.global.exception.ErrorMessage.INVALID_WEEKDAY_KOREA_NAME;
+import static oncall.global.exception.ErrorMessage.WEEKDAY_NOT_FOUND;
 
 public enum CustomDayOfWeek {
 
@@ -26,5 +30,19 @@ public enum CustomDayOfWeek {
 
     public String getKoreaName() {
         return koreaName;
+    }
+
+    public static CustomDayOfWeek of(String dayOfWeekKoreaName) {
+        return Arrays.stream(CustomDayOfWeek.values())
+                .filter(customDayOfWeek -> customDayOfWeek.getKoreaName().equals(dayOfWeekKoreaName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(INVALID_WEEKDAY_KOREA_NAME.getMessage()));
+    }
+
+    public CustomDayOfWeek getNext() {
+        return Arrays.stream(CustomDayOfWeek.values())
+                .filter(customDayOfWeek -> customDayOfWeek.getDayOfWeek().equals(dayOfWeek.plus(1)))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(WEEKDAY_NOT_FOUND.getMessage()));
     }
 }

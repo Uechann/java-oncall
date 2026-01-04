@@ -24,4 +24,8 @@ public class Holiday {
     public Month getMonth() {
         return month;
     }
+
+    public MonthDay getMonthDay() {
+        return monthDay;
+    }
 }

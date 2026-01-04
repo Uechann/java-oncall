@@ -15,6 +15,7 @@ public class OnCallService {
 
     private final HolidayRepository holidayRepository;
     private final WorkMonthRepository workMonthRepository;
+    private final WorkDayRepository workDayRepository;
     private final WorkerRepository workerRepository;
     private final WeekDayWorkerRepository weekDayWorkerRepository;
     private final HolidayWorkerRepository holidayWorkerRepository;
@@ -24,6 +25,7 @@ public class OnCallService {
     public OnCallService(
             HolidayRepository holidayRepository,
             WorkMonthRepository workMonthRepository,
+            WorkDayRepository workDayRepository,
             WorkerRepository workerRepository,
             WeekDayWorkerRepository weekDayWorkerRepository,
             HolidayWorkerRepository holidayWorkerRepository,
@@ -32,6 +34,7 @@ public class OnCallService {
     ) {
         this.holidayRepository = holidayRepository;
         this.workMonthRepository = workMonthRepository;
+        this.workDayRepository = workDayRepository;
         this.workerRepository = workerRepository;
         this.weekDayWorkerRepository = weekDayWorkerRepository;
         this.holidayWorkerRepository = holidayWorkerRepository;
@@ -64,9 +67,40 @@ public class OnCallService {
         List<String> monthAndWeekDay = monthAndWeekDayParser.parse(monthAndWeekDayInput);
 
         int monthInput = Integer.parseInt(monthAndWeekDay.get(0));
-        String weekDayInput = monthAndWeekDay.get(1);
-        List<Holiday> holidays = holidayRepository.findByMonth(Month.of(monthInput));
-        workMonthRepository.save(WorkMonth.create(Month.of(monthInput), weekDayInput, holidays));
+        CustomDayOfWeek customDayOfWeek = CustomDayOfWeek.of(monthAndWeekDay.get(1));
+        Month month = Month.of(monthInput);
+        List<Holiday> holidays = holidayRepository.findByMonth(month);
+        WorkMonth workMonth = WorkMonth.create(month, customDayOfWeek, holidays);
+        workMonthRepository.save(workMonth);
+
+        // workDay 초기화
+        int monthLength = month.length(false);
+        CustomDayOfWeek currentWeekDay = workMonth.getStartDayOfWeek();
+        for (int i = 1; i <= monthLength; i++) {
+            // 요일
+            MonthDay monthDay = MonthDay.of(month, i);
+
+            // 평일 휴일 enum
+            WeekDayHoliday weekDayHoliday = WeekDayHoliday.of(currentWeekDay);
+
+            // 법정 공휴일 여부
+            boolean isholiday = holidays.stream().anyMatch(holiday -> holiday.getMonthDay().equals(monthDay));
+
+            WorkDay workDay = WorkDay.create(
+                    weekDayHoliday,
+                    isholiday,
+                    workMonth,
+                    monthDay,
+                    currentWeekDay
+            );
+            workDayRepository.save(workDay);
+
+            System.out.println(monthDay.getMonth().getValue() + "월 " + monthDay.getDayOfMonth() + "일 "
+                    + currentWeekDay.getKoreaName() + "요일" + (isholiday ? "(휴일)" : "") + " 근무 일 초기화 완료!");
+
+            // 다음 요일로 저장
+            currentWeekDay = currentWeekDay.getNext();
+        }
 
         System.out.println("월과 시작 요일 저장 성공 !");
     }
@@ -92,6 +126,27 @@ public class OnCallService {
             Worker worker = workerRepository.findByName(workerName)
                     .orElseThrow(() -> new IllegalArgumentException(WORKER_NOT_FOUND.getMessage()));
             holidayWorkerRepository.save(HolidayWorker.create(worker, sequence.incrementAndGet()));
+        }
+    }
+
+    public void assignWorkers() {
+        List<WorkDay> workDays = workDayRepository.findAll();
+        List<WeekDayWorker> weekDayWorkers = weekDayWorkerRepository.findAll();
+        List<HolidayWorker> holidayWorkers = holidayWorkerRepository.findAll();
+
+        int weekDaySequence = 1;
+        int holidaySequence = 1;
+
+        for (WorkDay workDay : workDays) {
+            // 평일과 휴일
+            if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.WEEKDAY)) {
+                WeekDayWorker weekDayWorker = weekDayWorkers.get((weekDaySequence++) % weekDayWorkers.size() - 1);
+                workDay.assignWorker(weekDayWorker.getWorker());
+            }
+
+            if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.HOLIDAY)) {
+
+            }
         }
     }
 }
