@@ -22,6 +22,9 @@ public class OnCallController {
     }
 
     public void run() {
+        // 법정 공휴일 초기화
+        onCallService.initializeHolidays();
+
         retry(() -> {
             String monthAndWeekDayInput = inputView.inputMonthAndWeekDay();
             validator.validateMonthAndWeekday(monthAndWeekDayInput);
@@ -30,6 +33,9 @@ public class OnCallController {
         });
 
         retry(() -> {
+            String weekDaysWorkers = inputView.inputWeekDaysWorkers();
+
+            String holidaysWorkers = inputView.inputHolidaysWorkers();
             return null;
         });
     }

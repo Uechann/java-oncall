@@ -27,6 +27,4 @@ public enum CustomDayOfWeek {
     public String getKoreaName() {
         return koreaName;
     }
-
-
 }

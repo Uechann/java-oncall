@@ -1,6 +1,7 @@
 package oncall.global.config;
 
 import oncall.controller.OnCallController;
+import oncall.domain.repository.HolidaysRepository;
 import oncall.domain.repository.WorkMonthRepository;
 import oncall.domain.service.OnCallService;
 import oncall.global.util.MonthAndWeekDayParser;
@@ -12,6 +13,7 @@ import oncall.view.OutputView;
 public class DIConfig {
 
     private final WorkMonthRepository workMonthRepository = new WorkMonthRepository();
+    private final HolidaysRepository holidaysRepository = new HolidaysRepository();
 
     public OnCallController oncallController() {
         return new OnCallController(
@@ -24,6 +26,7 @@ public class DIConfig {
 
     public OnCallService onCallService() {
         return new OnCallService(
+                holidaysRepository(),
                 workMonthRepository(),
                 monthAndWeekDayParser()
         );
@@ -43,6 +46,10 @@ public class DIConfig {
 
     public Parser<String> monthAndWeekDayParser() {
         return new MonthAndWeekDayParser();
+    }
+
+    public HolidaysRepository holidaysRepository() {
+        return holidaysRepository;
     }
 
     public WorkMonthRepository workMonthRepository() {
