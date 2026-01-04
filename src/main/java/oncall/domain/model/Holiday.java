@@ -20,4 +20,8 @@ public class Holiday {
     public static Holiday of(Month month, MonthDay monthDay, String description) {
         return new Holiday(month, monthDay, description);
     }
+
+    public Month getMonth() {
+        return month;
+    }
 }

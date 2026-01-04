@@ -65,9 +65,9 @@ public class OnCallService {
 
         int monthInput = Integer.parseInt(monthAndWeekDay.get(0));
         String weekDayInput = monthAndWeekDay.get(1);
+        List<Holiday> holidays = holidayRepository.findByMonth(Month.of(monthInput));
+        workMonthRepository.save(WorkMonth.create(Month.of(monthInput), weekDayInput, holidays));
 
-        Month month = Month.of(monthInput);
-        workMonthRepository.save(WorkMonth.create(month, weekDayInput));
         System.out.println("월과 시작 요일 저장 성공 !");
     }
 
