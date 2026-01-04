@@ -1,9 +1,12 @@
 package oncall.controller;
 
 import oncall.domain.service.OnCallService;
+import oncall.dto.WorkerResultDto;
 import oncall.global.validator.Validator;
 import oncall.view.InputView;
 import oncall.view.OutputView;
+
+import java.util.List;
 
 import static oncall.global.util.Retry.retry;
 
@@ -46,6 +49,7 @@ public class OnCallController {
         });
 
         // 근무자 배정
-
+        List<WorkerResultDto> workerResultDtos = onCallService.assignWorkers();
+        outputView.outputWorkersResult(workerResultDtos);
     }
 }

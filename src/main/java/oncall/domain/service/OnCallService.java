@@ -2,10 +2,12 @@ package oncall.domain.service;
 
 import oncall.domain.model.*;
 import oncall.domain.repository.*;
+import oncall.dto.WorkerResultDto;
 import oncall.global.util.Parser;
 
 import java.time.Month;
 import java.time.MonthDay;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -94,7 +96,6 @@ public class OnCallService {
                     currentWeekDay
             );
             workDayRepository.save(workDay);
-
             System.out.println(monthDay.getMonth().getValue() + "월 " + monthDay.getDayOfMonth() + "일 "
                     + currentWeekDay.getKoreaName() + "요일" + (isholiday ? "(휴일)" : "") + " 근무 일 초기화 완료!");
 
@@ -129,24 +130,51 @@ public class OnCallService {
         }
     }
 
-    public void assignWorkers() {
+    public List<WorkerResultDto> assignWorkers() {
         List<WorkDay> workDays = workDayRepository.findAll();
+        System.out.println(workDays.size()); // 1 나옴 위에서 workday 저장이 안됌
         List<WeekDayWorker> weekDayWorkers = weekDayWorkerRepository.findAll();
         List<HolidayWorker> holidayWorkers = holidayWorkerRepository.findAll();
 
         int weekDaySequence = 1;
         int holidaySequence = 1;
 
+        List<WorkerResultDto> workerResultDtos = new ArrayList<>();
+
         for (WorkDay workDay : workDays) {
+
             // 평일과 휴일
-            if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.WEEKDAY)) {
+            if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.WEEKDAY) && !workDay.isHoliday()) {
                 WeekDayWorker weekDayWorker = weekDayWorkers.get((weekDaySequence++) % weekDayWorkers.size() - 1);
-                workDay.assignWorker(weekDayWorker.getWorker());
+                Worker worker = weekDayWorker.getWorker();
+                workDay.assignWorker(worker);
+                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
             }
 
-            if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.HOLIDAY)) {
+            if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.HOLIDAY) || workDay.isHoliday()) {
+                HolidayWorker holidayWorker = holidayWorkers.get((holidaySequence++) % holidayWorkers.size() - 1);
+                Worker worker = holidayWorker.getWorker();
+                workDay.assignWorker(worker);
+                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
 
             }
+
+            boolean isHolidayAndWeekDay = false;
+            if (workDay.isHoliday() && workDay.getWeekDayHoliday().equals(WeekDayHoliday.WEEKDAY)) {
+                isHolidayAndWeekDay = true;
+            }
+
+            System.out.println(workDay.getMonthDay() + workDay.getDayOfWeek().getKoreaName() + workDay.getWorker().getName());
+
+            workerResultDtos.add(WorkerResultDto.of(
+                    workDay.getWorkMonth().getMonth().getValue(),
+                    workDay.getMonthDay().getDayOfMonth(),
+                    workDay.getDayOfWeek().getKoreaName(),
+                    isHolidayAndWeekDay,
+                    workDay.getWorker().getName()
+            ));
         }
+
+        return workerResultDtos;
     }
 }

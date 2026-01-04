@@ -13,4 +13,8 @@ public class HolidayWorker {
     public static HolidayWorker create(Worker worker, int sequence) {
         return new HolidayWorker(worker, sequence);
     }
+
+    public Worker getWorker() {
+        return worker;
+    }
 }

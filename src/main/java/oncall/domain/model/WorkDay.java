@@ -66,4 +66,20 @@ public class WorkDay {
     public WeekDayHoliday getWeekDayHoliday() {
         return weekDayHoliday;
     }
+
+    public boolean isHoliday() {
+        return isHoliday;
+    }
+
+    public MonthDay getMonthDay() {
+        return monthDay;
+    }
+
+    public CustomDayOfWeek getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    public Worker getWorker() {
+        return worker;
+    }
 }
