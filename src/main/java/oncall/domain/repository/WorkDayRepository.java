@@ -10,12 +10,12 @@ import java.util.Map;
 
 public class WorkDayRepository {
 
-    private Map<Month,WorkDay> workDays = new LinkedHashMap<>();
+    private List<WorkDay> workDays = new ArrayList<>();
 
     public WorkDayRepository() {}
 
     public void save(WorkDay workDay) {
-        workDays.put(workDay.getWorkMonth().getMonth(), workDay);
+        workDays.add(workDay);
     }
 
     public void findByMonth(Month month) {
@@ -23,6 +23,6 @@ public class WorkDayRepository {
     }
 
     public List<WorkDay> findAll() {
-        return new ArrayList<>(workDays.values());
+        return List.copyOf(workDays);
     }
 }

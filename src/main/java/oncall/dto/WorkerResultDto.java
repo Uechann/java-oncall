@@ -16,7 +16,7 @@ public record WorkerResultDto(
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(month).append("월 ").append(day).append("일 ");
-        stringBuilder.append(dayOfWeek).append("요일");
+        stringBuilder.append(dayOfWeek);
 
         if (isHolidayAndWeekDay) {
             stringBuilder.append("(휴일)");

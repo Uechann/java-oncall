@@ -96,14 +96,14 @@ public class OnCallService {
                     currentWeekDay
             );
             workDayRepository.save(workDay);
-            System.out.println(monthDay.getMonth().getValue() + "월 " + monthDay.getDayOfMonth() + "일 "
-                    + currentWeekDay.getKoreaName() + "요일" + (isholiday ? "(휴일)" : "") + " 근무 일 초기화 완료!");
+//            System.out.println(workDay.getWorkMonth().getMonth().getValue() + "월 " + workDay.getMonthDay().getDayOfMonth() + "일 "
+//                    + workDay.getDayOfWeek().getKoreaName() + "요일" + (workDay.isHoliday() ? "(휴일)" : "") + " 근무 일 초기화 완료!");
 
             // 다음 요일로 저장
             currentWeekDay = currentWeekDay.getNext();
         }
 
-        System.out.println("월과 시작 요일 저장 성공 !");
+//        System.out.println("월과 시작 요일 저장 성공 !");
     }
 
     // 평일 근무자 순번 초기화
@@ -132,12 +132,11 @@ public class OnCallService {
 
     public List<WorkerResultDto> assignWorkers() {
         List<WorkDay> workDays = workDayRepository.findAll();
-        System.out.println(workDays.size()); // 1 나옴 위에서 workday 저장이 안됌
         List<WeekDayWorker> weekDayWorkers = weekDayWorkerRepository.findAll();
         List<HolidayWorker> holidayWorkers = holidayWorkerRepository.findAll();
 
-        int weekDaySequence = 1;
-        int holidaySequence = 1;
+        int weekDaySequence = 0;
+        int holidaySequence = 0;
 
         List<WorkerResultDto> workerResultDtos = new ArrayList<>();
 
@@ -145,17 +144,17 @@ public class OnCallService {
 
             // 평일과 휴일
             if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.WEEKDAY) && !workDay.isHoliday()) {
-                WeekDayWorker weekDayWorker = weekDayWorkers.get((weekDaySequence++) % weekDayWorkers.size() - 1);
+                WeekDayWorker weekDayWorker = weekDayWorkers.get((weekDaySequence++) % weekDayWorkers.size());
                 Worker worker = weekDayWorker.getWorker();
                 workDay.assignWorker(worker);
-                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
+//                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
             }
 
             if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.HOLIDAY) || workDay.isHoliday()) {
-                HolidayWorker holidayWorker = holidayWorkers.get((holidaySequence++) % holidayWorkers.size() - 1);
+                HolidayWorker holidayWorker = holidayWorkers.get((holidaySequence++) % holidayWorkers.size());
                 Worker worker = holidayWorker.getWorker();
                 workDay.assignWorker(worker);
-                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
+//                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
 
             }
 
@@ -163,8 +162,6 @@ public class OnCallService {
             if (workDay.isHoliday() && workDay.getWeekDayHoliday().equals(WeekDayHoliday.WEEKDAY)) {
                 isHolidayAndWeekDay = true;
             }
-
-            System.out.println(workDay.getMonthDay() + workDay.getDayOfWeek().getKoreaName() + workDay.getWorker().getName());
 
             workerResultDtos.add(WorkerResultDto.of(
                     workDay.getWorkMonth().getMonth().getValue(),
@@ -174,7 +171,6 @@ public class OnCallService {
                     workDay.getWorker().getName()
             ));
         }
-
         return workerResultDtos;
     }
 }
