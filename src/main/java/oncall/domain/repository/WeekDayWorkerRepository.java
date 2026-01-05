@@ -1,19 +1,18 @@
 package oncall.domain.repository;
 
-import oncall.domain.model.WeekDayWorker;
+import oncall.domain.model.WeekDayWorkers;
+import oncall.domain.model.Worker;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class WeekDayWorkerRepository {
 
-    private List<WeekDayWorker> weekDayWorkers = new ArrayList<>();
+    private WeekDayWorkers weekDayWorkers = new WeekDayWorkers();
 
-    public void save(WeekDayWorker weekDayWorker) {
-        weekDayWorkers.add(weekDayWorker);
+    public void save(Worker worker) {
+        weekDayWorkers.add(worker);
     }
 
-    public List<WeekDayWorker> findAll() {
-        return List.copyOf(weekDayWorkers);
+    public WeekDayWorkers findAll() {
+        return new WeekDayWorkers(weekDayWorkers.findAll());
     }
 }

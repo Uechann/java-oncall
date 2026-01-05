@@ -1,19 +1,18 @@
 package oncall.domain.repository;
 
-import oncall.domain.model.HolidayWorker;
+import oncall.domain.model.HolidayWorkers;
+import oncall.domain.model.Worker;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class HolidayWorkerRepository {
 
-    private List<HolidayWorker> holidayWorkers = new ArrayList<>();
+    private HolidayWorkers holidayWorkers = new HolidayWorkers();
 
-    public void save(HolidayWorker holidayWorker) {
-        holidayWorkers.add(holidayWorker);
+    public void save(Worker worker) {
+        holidayWorkers.add(worker);
     }
 
-    public List<HolidayWorker> findAll() {
-        return List.copyOf(holidayWorkers);
+    public HolidayWorkers findAll() {
+        return new HolidayWorkers(holidayWorkers.findAll());
     }
 }
