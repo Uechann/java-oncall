@@ -9,7 +9,6 @@ import java.time.Month;
 import java.time.MonthDay;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static oncall.global.exception.ErrorMessage.WORKER_NOT_FOUND;
 
@@ -44,16 +43,6 @@ public class OnCallService {
         this.workersParser = workersParser;
     }
 
-
-    //- 법정 공휴일 리스트
-    //- 1/1 신정
-    //- 3/1 삼일절
-    //- 5/5 어린이날
-    //- 6/6 현충일
-    //- 8/15 광복절
-    //- 10/3 개천절
-    //- 10/9 한글날
-    //- 12/25 성탄절
     public void initializeHolidays() {
         holidayRepository.save(Holiday.of(Month.of(1), MonthDay.of(1, 1), "신정"));
         holidayRepository.save(Holiday.of(Month.of(3), MonthDay.of(3, 1), "삼일절"));
@@ -79,18 +68,13 @@ public class OnCallService {
         int monthLength = month.length(false);
         CustomDayOfWeek currentWeekDay = workMonth.getStartDayOfWeek();
         for (int i = 1; i <= monthLength; i++) {
-            // 요일
             MonthDay monthDay = MonthDay.of(month, i);
-
-            // 평일 휴일 enum
             WeekDayHoliday weekDayHoliday = WeekDayHoliday.of(currentWeekDay);
-
-            // 법정 공휴일 여부
-            boolean isholiday = holidays.stream().anyMatch(holiday -> holiday.getMonthDay().equals(monthDay));
+            boolean isHoliday = holidays.stream().anyMatch(holiday -> holiday.getMonthDay().equals(monthDay));
 
             WorkDay workDay = WorkDay.create(
                     weekDayHoliday,
-                    isholiday,
+                    isHoliday,
                     workMonth,
                     monthDay,
                     currentWeekDay
@@ -98,18 +82,13 @@ public class OnCallService {
             workDayRepository.save(workDay);
 //            System.out.println(workDay.getWorkMonth().getMonth().getValue() + "월 " + workDay.getMonthDay().getDayOfMonth() + "일 "
 //                    + workDay.getDayOfWeek().getKoreaName() + "요일" + (workDay.isHoliday() ? "(휴일)" : "") + " 근무 일 초기화 완료!");
-
-            // 다음 요일로 저장
             currentWeekDay = currentWeekDay.getNext();
         }
-//        System.out.println("월과 시작 요일 저장 성공 !");
     }
 
     // 평일 근무자 순번 초기화
     public void initializeWeekDayWorkers(String weekDaysWorkersInput) {
-        AtomicInteger sequence = new AtomicInteger(0);
         List<String> workersInput = workersParser.parse(weekDaysWorkersInput);
-
         for (String workerName : workersInput) {
             Worker worker = new Worker(workerName);
             workerRepository.save(worker);
@@ -119,9 +98,7 @@ public class OnCallService {
 
     // 휴일 근무자 순번 초기화
     public void initializeHolidayWorkers(String holidayWorkersInput) {
-        AtomicInteger sequence = new AtomicInteger(0);
         List<String> workersInput = workersParser.parse(holidayWorkersInput);
-
         for (String workerName : workersInput) {
             Worker worker = workerRepository.findByName(workerName)
                     .orElseThrow(() -> new IllegalArgumentException(WORKER_NOT_FOUND.getMessage()));
@@ -136,42 +113,14 @@ public class OnCallService {
 
         int weekDaySequence = 0;
         int holidaySequence = 0;
-
         List<WorkerResultDto> workerResultDtos = new ArrayList<>();
-        // 2일 연속 근무일 때 다음 근무와 순서 변경
         for (WorkDay workDay : workDays) {
-            // 평일이고 법정 공휴일 아닐 때
             if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.WEEKDAY) && !workDay.isHoliday()) {
-                Worker worker = weekDayWorkers.findBySequence(weekDaySequence);
-
-                // 이전 근무자가 현재 근무자와 겹칠 경우
-                if (!workerResultDtos.isEmpty() &&
-                        workerResultDtos.get(workerResultDtos.size() - 1).workerName().equals(worker.getName())) {
-                    // 근무 순서 바꾸기
-                    weekDayWorkers.changeSequence(weekDaySequence);
-                    worker = weekDayWorkers.findBySequence(weekDaySequence);
-                }
-
-                workDay.assignWorker(worker);
-                weekDaySequence++;
-//                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
+                weekDaySequence = assignWeekDayWorker(workDay, weekDayWorkers, weekDaySequence, workerResultDtos);
             }
 
-            // 휴일이거나 법정 공휴일 일 때
             if (workDay.getWeekDayHoliday().equals(WeekDayHoliday.HOLIDAY) || workDay.isHoliday()) {
-                Worker worker = holidayWorkers.findBySequence(holidaySequence);
-
-                // 이전 근무자가 현재 근무자와 겹칠 경우
-                if (!workerResultDtos.isEmpty() &&
-                        workerResultDtos.get(workerResultDtos.size() - 1).workerName().equals(worker.getName())) {
-                    // 근무 순서 바꾸기
-                    holidayWorkers.changeSequence(holidaySequence);
-                    worker = holidayWorkers.findBySequence(holidaySequence);
-                }
-
-                workDay.assignWorker(worker);
-                holidaySequence++;
-//                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
+                holidaySequence = assignHolidayWorker(workDay, holidayWorkers, holidaySequence, workerResultDtos);
             }
 
             boolean isHolidayAndWeekDay = false;
@@ -188,5 +137,39 @@ public class OnCallService {
             ));
         }
         return workerResultDtos;
+    }
+
+    private static int assignHolidayWorker(WorkDay workDay, HolidayWorkers holidayWorkers, int holidaySequence, List<WorkerResultDto> workerResultDtos) {
+        Worker worker = holidayWorkers.findBySequence(holidaySequence);
+
+        // 이전 근무자가 현재 근무자와 겹칠 경우
+        if (!workerResultDtos.isEmpty() &&
+                workerResultDtos.get(workerResultDtos.size() - 1).workerName().equals(worker.getName())) {
+            // 근무 순서 바꾸기
+            holidayWorkers.changeSequence(holidaySequence);
+            worker = holidayWorkers.findBySequence(holidaySequence);
+        }
+
+        workDay.assignWorker(worker);
+        holidaySequence++;
+//                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
+        return holidaySequence;
+    }
+
+    private static int assignWeekDayWorker(WorkDay workDay, WeekDayWorkers weekDayWorkers, int weekDaySequence, List<WorkerResultDto> workerResultDtos) {
+        Worker worker = weekDayWorkers.findBySequence(weekDaySequence);
+
+        // 이전 근무자가 현재 근무자와 겹칠 경우
+        if (!workerResultDtos.isEmpty() &&
+                workerResultDtos.get(workerResultDtos.size() - 1).workerName().equals(worker.getName())) {
+            // 근무 순서 바꾸기
+            weekDayWorkers.changeSequence(weekDaySequence);
+            worker = weekDayWorkers.findBySequence(weekDaySequence);
+        }
+
+        workDay.assignWorker(worker);
+        weekDaySequence++;
+//                System.out.println(workDay.getMonthDay() + workDay.getWorker().getName() + "배정 완료");
+        return weekDaySequence;
     }
 }
